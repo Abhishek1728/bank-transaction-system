@@ -1,0 +1,28 @@
+-- 1. Create the database
+CREATE DATABASE IF NOT EXISTS bank;
+USE bank;
+
+-- 2. Create the master accounts table
+CREATE TABLE IF NOT EXISTS bank_master (
+    acno VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    city VARCHAR(50),
+    mn VARCHAR(15),
+    balance INT DEFAULT 0,
+    loan INT DEFAULT 0,
+    loan_status VARCHAR(5) DEFAULT '0'
+);
+
+-- 3. Create the transaction history table
+CREATE TABLE IF NOT EXISTS banktransaction (
+    acno VARCHAR(20),
+    amt INT NOT NULL,
+    dot DATE NOT NULL,
+    type CHAR(1) CHECK (type IN ('D', 'W')),
+    FOREIGN KEY (acno) REFERENCES bank_master(acno) ON DELETE CASCADE
+);
+
+
+
+
+
