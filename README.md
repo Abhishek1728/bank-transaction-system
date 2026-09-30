@@ -1,116 +1,117 @@
 # Bank Transaction System
 
-A command-line banking application written in **Python** that stores its data in a **MySQL** database. From a terminal menu you can create accounts, deposit and withdraw money, view account details with transaction history, and take a loan. No graphical interface is needed.
+A command-line bank management application built with **Python** and **MySQL**. It lets you create accounts, deposit and withdraw money, view account details with transaction history, and take a loan. All data is stored in a MySQL database.
 
 ## Features
 
-| Menu option | What it does |
-|---|---|
-| 1. Create Account | Registers an account (number, name, city, mobile). Starts with balance 0. Duplicate account numbers are rejected. |
-| 2. Deposit Money | Adds money to an account and records the transaction with a date. |
-| 3. Withdraw Money | Removes money if the balance is enough and records the transaction. |
-| 4. Display Account Details | Shows holder details, balance, loan info and all transactions. |
-| 5. Take Loan | One loan per account; the amount is credited to the balance. |
-| 6. Exit | Closes the program and the database connection safely. |
+- Create a new bank account
+- Deposit money
+- Withdraw money (with insufficient-balance check)
+- Display account details and full transaction history
+- Take a loan (one loan per account, amount is credited to the balance)
+- Input validation on every field, with clear error messages
+- Database credentials kept in a `.env` file, not in the source code
 
-Every input is validated (account number, name, city, mobile number, amounts, dates), and deposits/withdrawals are saved atomically (transaction row and balance update together, or not at all).
+## Tech Stack
+
+| Component | Version |
+|---|---|
+| Python | 3.8 or newer |
+| MySQL Server | 8.0.16 or newer |
+| mysql-connector-python | latest |
+| python-dotenv | latest |
 
 ## Project Structure
 
 ```
-.
-├── bank.py            # the application
-├── schema.sql         # creates the database and tables
-├── requirements.txt   # Python dependencies
-├── .env.example       # template for database credentials
-├── .gitignore         # keeps your real .env out of Git
+bank-transaction-system/
+├── Bank_System.py                       # Main application
+├── Creation_and_ExectuionSQL_Code.txt   # SQL script (creates database and tables)
+├── requirements.txt                     # Python dependencies
+├── .env.example                         # Template for database credentials
+├── .gitignore                           # Keeps real .env out of Git
 └── README.md
 ```
 
-> If your main file has a different name, replace `bank.py` with that name in the commands below.
+## Setup and Run (Step by Step)
 
-## Prerequisites
+### Step 1: Install the prerequisites
 
-You need these installed before starting:
+1. **Python 3.8+**: download from https://www.python.org/downloads/. During installation, tick **"Add Python to PATH"**.
+2. **MySQL Server** and **MySQL Workbench**: download from https://dev.mysql.com/downloads/installer/. During installation, set a password for the `root` user and remember it.
+3. **Git** (only if you want to clone the repository): https://git-scm.com/downloads
 
-1. **Python 3.8 or newer** (check with `python --version`, or `python3 --version` on macOS/Linux).
-2. **MySQL Server 8.x** (or 5.7+) that is **running**, and the `mysql` command-line client that comes with it.
-3. **Git**, to clone the repository.
+Check that Python is installed by opening a terminal (Command Prompt on Windows) and running:
 
-You also need a MySQL user and password that can create databases (the default `root` user works).
-
-## Setup and Run (step by step)
-
-All commands are typed in a terminal (Command Prompt or PowerShell on Windows, Terminal on macOS/Linux).
-
-### Step 1: Get the code
-
-```bash
-git clone <repository-url>
-cd <repository-folder>
+```
+python --version
 ```
 
-### Step 2: Create and activate a virtual environment (recommended)
+(On Windows you can also use `py --version`.)
 
-Windows (Command Prompt / PowerShell):
+### Step 2: Get the project
 
-```bash
+Clone the repository (or download it as a ZIP from GitHub using **Code → Download ZIP** and extract it):
+
+```
+git clone https://github.com/Abhishek1728/bank-transaction-system.git
+cd bank-transaction-system
+```
+
+### Step 3: (Optional) Create a virtual environment
+
+This keeps the project's libraries separate from the rest of your system.
+
+```
 python -m venv venv
-venv\Scripts\activate
 ```
 
-macOS / Linux:
+Activate it:
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
+- Windows: `venv\Scripts\activate`
+- macOS / Linux: `source venv/bin/activate`
+
+### Step 4: Install the dependencies
+
+```
+python -m pip install -r requirements.txt
 ```
 
-You should now see `(venv)` at the start of your terminal line.
+On Windows you can use `py -m pip install -r requirements.txt` if `python` is not recognized.
 
-### Step 3: Install the dependencies
+This installs `mysql-connector-python` and `python-dotenv`.
 
-```bash
-pip install -r requirements.txt
+### Step 5: Create the database and tables
+
+1. Make sure the **MySQL server is running**.
+2. Open **MySQL Workbench** and connect to your local instance (for example, "Local instance MySQL").
+3. Open a new query tab (**File → New Query Tab**).
+4. Open `Creation_and_ExectuionSQL_Code.txt` in any text editor, copy **all** of its contents, and paste them into the query tab.
+5. Click the **lightning bolt** icon (or press `Ctrl + Shift + Enter`) to run the script.
+6. Verify the setup by running:
+
+```sql
+USE bank;
+SHOW TABLES;
 ```
 
-This installs `mysql-connector-python` (talks to MySQL) and `python-dotenv` (reads the `.env` file).
+You should see two tables: `bank_master` and `banktransaction`.
 
-### Step 4: Create the database and tables
+The script creates:
 
-Make sure MySQL Server is running, then run:
+| Table | Purpose | Columns |
+|---|---|---|
+| `bank_master` | Account details | `acno`, `name`, `city`, `mn`, `balance`, `loan`, `loan_status` |
+| `banktransaction` | Deposit / withdrawal history | `acno`, `amt`, `dot`, `type` (`D` or `W`) |
 
-```bash
-mysql -u root -p < schema.sql
-```
+### Step 6: Configure your database credentials
 
-Enter your MySQL password when asked. This creates a database named `bank` with two tables, `bank_master` and `banktransaction`. It is safe to run more than once.
+The program reads its connection details from a file named `.env` in the project folder. This file is **not** included in the repository, so you must create it.
 
-**If you get `'mysql' is not recognized` (Windows):** the MySQL `bin` folder is not on your PATH. Either run it with the full path, for example:
-
-```bash
-"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p < schema.sql
-```
-
-or open the client with `mysql -u root -p` (using the full path) and then type `SOURCE schema.sql;`.
-
-### Step 5: Configure your database credentials
-
-Copy the template to a real `.env` file.
-
-Windows:
-
-```bash
-copy .env.example .env
-```
-
-macOS / Linux:
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` in any text editor and fill in your values:
+1. Copy the template:
+   - Windows (Command Prompt): `copy .env.example .env`
+   - macOS / Linux: `cp .env.example .env`
+2. Open `.env` in a text editor and fill in your real values:
 
 ```
 DB_HOST=localhost
@@ -119,17 +120,22 @@ DB_PASSWORD=your_mysql_password
 DB_NAME=bank
 ```
 
-The `.env` file must be in the **same folder as `bank.py`**. It is listed in `.gitignore`, so your password is never uploaded to GitHub.
+- `DB_HOST`: usually `localhost`
+- `DB_USER`: your MySQL username, usually `root`
+- `DB_PASSWORD`: the password you set when installing MySQL
+- `DB_NAME`: keep it as `bank`
 
-### Step 6: Run the program
+Rules for the file: no quotes, no spaces around `=`, and the file must be named exactly `.env` (not `.env.txt`).
 
-```bash
-python bank.py
+### Step 7: Run the application
+
+```
+python Bank_System.py
 ```
 
-(On macOS/Linux use `python3 bank.py` if `python` is not found.)
+(On Windows: `py Bank_System.py`. You can also open the file in IDLE and press `F5`.)
 
-You should see the menu:
+If everything is set up correctly, you will see:
 
 ```
 ***** BANK TRANSACTION SYSTEM *****
@@ -143,53 +149,47 @@ You should see the menu:
 Enter your choice (1-6):
 ```
 
-Type a number and press Enter. Choose `6` to exit (or press `Ctrl+C`).
+## How to Use
 
-## Quick Test Walkthrough
+Type the number of the option you want and press Enter. A suggested first run:
 
-Follow this to confirm everything works:
-
-1. Choose **1**, then enter account number `100200`, name `Asha Verma`, city `Pune`, mobile `9876543210`. You should see *Account created successfully*.
-2. Choose **2**, account `100200`, amount `5000`, press Enter for today's date. You should see *Amount deposited successfully*.
-3. Choose **3**, account `100200`, amount `1500`, press Enter for the date. You should see *Amount withdrawn successfully*.
-4. Choose **4**, account `100200`. You should see balance `3500` and two transactions.
-5. Choose **5**, account `100200`, loan `10000`. The balance becomes `13500`.
+1. Choose **1** to create an account (for example, account number `100001`).
+2. Choose **2** to deposit money (for example, `5000`).
+3. Choose **3** to withdraw money (for example, `1000`).
+4. Choose **4** to view the account details. The balance should be `4000` with two transactions listed.
+5. Choose **5** to take a loan. The amount is added to the balance.
 6. Choose **6** to exit.
 
-## Input Rules
+### Input rules
 
-| Field | Rule |
+| Input | Rule |
 |---|---|
 | Account number | Digits only, 6 to 12 digits |
-| Name | Letters, spaces and `. ' -` only, up to 50 characters |
-| City | Same as name, up to 30 characters |
+| Name | Letters and spaces only, up to 50 characters |
+| City | Letters and spaces only, up to 30 characters |
 | Mobile number | Exactly 10 digits, starting with 6, 7, 8 or 9 |
-| Deposit / Withdrawal | Whole number, 1 to 1,000,000 |
-| Loan | Whole number, 1 to 1,000,000; one loan per account |
-| Date | `YYYY-MM-DD`, not in the future; press Enter for today |
-| Balance | Cannot exceed 2,000,000,000 |
+| Deposit / withdrawal | Whole number from 1 to 1,000,000 |
+| Loan | Whole number from 1 to 1,000,000, one loan per account |
+| Date | `YYYY-MM-DD`, not in the future. Press Enter to use today's date |
 
-These limits are constants at the top of `bank.py` and can be changed there.
+These limits are defined in one block at the top of `Bank_System.py` and can be changed there.
 
 ## Troubleshooting
 
-| Problem | Likely cause and fix |
+| Problem | Solution |
 |---|---|
-| `Could not connect to MySQL: ... Access denied` | Wrong `DB_USER` or `DB_PASSWORD` in `.env`. |
-| `Could not connect to MySQL: ... Can't connect to MySQL server` | MySQL Server is not running. Start it (Windows: Services app, or `net start MySQL80`; macOS/Linux: start the `mysql` service). |
-| `Unknown database 'bank'` | Step 4 was skipped. Run `mysql -u root -p < schema.sql`. |
-| `ModuleNotFoundError: No module named 'mysql'` or `'dotenv'` | Dependencies not installed in the active environment. Activate the virtual environment and rerun `pip install -r requirements.txt`. |
-| `Table 'bank.bank_master' doesn't exist` | Step 4 did not complete. Rerun it and check for errors. |
-| `.env` values seem ignored | `.env` must be in the folder you run the command from, and named exactly `.env` (not `.env.txt`). |
+| `Could not connect to MySQL: Access denied for user` | The password in `.env` is wrong. Use the password you set during MySQL installation. |
+| `Could not connect to MySQL: Unknown database 'bank'` | The SQL script has not been run yet. Complete Step 5. |
+| `Could not connect to MySQL: Can't connect to MySQL server` | The MySQL server is not running. Start it (Windows: open Services and start MySQL, or use MySQL Workbench). |
+| `ModuleNotFoundError: No module named 'dotenv'` or `'mysql'` | Dependencies are not installed. Run Step 4 using the same Python you use to run the program. |
+| `pip is not recognized` | Use `python -m pip ...` or `py -m pip ...` instead of `pip ...`. |
+| Password is empty or not picked up | The `.env` file is missing, misnamed (for example `.env.txt`), or saved in a different folder than `Bank_System.py`. |
 
-## Tech Stack
+## Security Notes
 
-- Python 3
-- MySQL
-- `mysql-connector-python`, `python-dotenv`
+- The real `.env` file contains your password and is listed in `.gitignore`, so it is never uploaded to GitHub. Never commit it.
+- All SQL queries use parameterized statements (`%s` placeholders), which protects against SQL injection.
 
-## Limitations
+## Author
 
-- No login or PIN; anyone can operate any account.
-- Loans cannot be repaid and carry no interest.
-- Amounts are whole numbers only.
+Abhishek
